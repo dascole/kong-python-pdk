@@ -1,24 +1,29 @@
 #!/usr/bin/env python3
 import os
-import imp
+import importlib.util
 from setuptools import setup
 
 PROJ_NAME = 'kong-pdk'
 PACKAGE_NAME = 'kong_pdk'
 
-PROJ_METADATA = '%s.json' % PROJ_NAME
-
 here = os.path.abspath(os.path.dirname(__file__))
 
-try:
-    README = open(os.path.join(here, 'README.md')).read()
-except:  # noqa: E722 do not use bare 'except
-    README = ""
-try:
-    CHANGELOG = open(os.path.join(here, 'CHANGELOG.md')).read()
-except:  # noqa: E722 do not use bare 'except
-    CHANGELOG = ""
-VERSION = "%.2f" % imp.load_source('version', os.path.join(here, '%s/const.py' % PACKAGE_NAME)).__version__
+# Read project files
+def read_file(filename):
+    try:
+        return open(os.path.join(here, filename)).read()
+    except Exception:
+        return ""
+
+README = read_file('README.md')
+CHANGELOG = read_file('CHANGELOG.md')
+
+const_path = os.path.join(here, f'{PACKAGE_NAME}/const.py')
+spec = importlib.util.spec_from_file_location('version', const_path)
+version_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(version_module)
+
+VERSION = version_module.__version__
 
 packages = [
     'kong_pdk',
